@@ -6,28 +6,27 @@ public class StorageImpl<K, V> implements Storage<K, V> {
     private static final int MAX_CAPACITY = 10;
     private K[] keys;
     private V[] values;
-    private int count;
+    private boolean[] occupied;
 
     public StorageImpl() {
         keys = (K[]) new Object[MAX_CAPACITY];
         values = (V[]) new Object[MAX_CAPACITY];
+        occupied = new boolean[MAX_CAPACITY];
     }
 
     @Override
     public void put(K key, V value) {
         for (int i = 0; i < keys.length; i++) {
-            if (key != null && keys[i] != null && keys[i].equals(key)) {
+            if (occupied[i] && keys[i].equals(key)) {
                 values[i] = value;
-                return; // виходимо, бо оновили
-            } else if (key == null && keys[i] == null) {
-                values[i] = value;
-                return; // виходимо, бо оновили
+                return;
             }
         }
         for (int i = 0; i < keys.length; i++) {
-            if (keys[i] == null) {
+            if (!occupied[i]) {
                 keys[i] = key;
                 values[i] = value;
+                occupied[i] = true;
                 return; // виходимо, бо додали
             }
         }
@@ -37,10 +36,7 @@ public class StorageImpl<K, V> implements Storage<K, V> {
     @Override
     public V get(K key) {
         for (int i = 0; i < keys.length; i++) {
-            if (key != null && keys[i] != null && keys[i].equals(key)) {
-                return values[i];
-            }
-            if (key == null && keys[i] == null) {
+            if (occupied[i] && keys[i].equals(key)) {
                 return values[i];
             }
         }
@@ -49,12 +45,16 @@ public class StorageImpl<K, V> implements Storage<K, V> {
 
     @Override
     public int size() {
-        count = 0;
+        int count = 0;
         for (int i = 0; i < keys.length; i++) {
-            if (keys[i] != null) {
+            if (occupied[i]) {
                 count++;
             }
         }
         return count;
+    }
+
+    private boolean keysEqual(K a, K b) {
+        return a == null ? b == null : a.equals(b);
     }
 }
